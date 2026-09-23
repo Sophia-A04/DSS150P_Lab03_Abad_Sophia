@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 from statistics import median
 from time import perf_counter
+import shutil
 
 import pandas as pd
 import psycopg
@@ -449,6 +450,62 @@ def run_benchmark(curated_path, output_dir, repeats: int = 5):
 def write_partitioned_parquet(df, output_dir):
     """Write Parquet partitioned by order_year/order_month."""
 
-    raise NotImplementedError(
-        "Implement Task 9.3 partitioning"
+    output_dir = Path(output_dir)
+
+    # Remove only the generated partition output so reruns
+    # cannot leave stale partition files behind.
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
+
+    output_dir.mkdir(
+        parents=True,
+        exist_ok=True,
     )
+
+    partitioned = df.copy()
+
+    timestamps = pd.to_datetime(
+        partitioned["order_timestamp"],
+        utc=True,
+        errors="raise",
+    )
+
+    partitioned["order_year"] = (
+        timestamps.dt.year.astype("int16")
+    )
+
+    partitioned["order_month"] = (
+        timestamps.dt.month.astype("int8")
+    )
+
+    partitioned.to_parquet(
+        output_dir,
+        index=False,
+        compression="snappy",
+        partition_cols=[
+            "order_year",
+            "order_month",
+        ],
+    )
+
+    unique_partitions = (
+        partitioned[
+            ["order_year", "order_month"]
+        ]
+        .drop_duplicates()
+        .sort_values(
+            ["order_year", "order_month"]
+        )
+        .reset_index(drop=True)
+    )
+
+    return {
+        "output_dir": output_dir,
+        "rows": len(partitioned),
+        "partition_count": len(unique_partitions),
+        "years": sorted(
+            partitioned["order_year"]
+            .unique()
+            .tolist()
+        ),
+    }
