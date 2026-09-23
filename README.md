@@ -11,6 +11,10 @@ The laboratory develops a modular and rerun-safe data pipeline covering reproduc
 - Goal 2: Raw -> staging -> curated transformations, audit/error handling, quarantine, and rerun-safe loading
 - Goal 3: CSV/JSONL/Parquet/PostgreSQL comparison, benchmarking, partitioning, and selected-partition loading
 - Goal 4: Apache Airflow DAG for `extract -> transform -> load -> validate`
+- `docs/technical_questions.md`
+- `docs/benchmark_results.csv`
+- `docs/benchmark_context.json`
+- `evidence/README.md`
 
 ## Recommended Commands
 
@@ -156,6 +160,13 @@ Detailed laboratory evidence is available in:
 - `docs/technical_reflection.md`
 
 These documents record environment validation, ETL/ELT behavior, quarantine handling, storage benchmarking, partition loading, Airflow orchestration, controlled failure and recovery, and the final integrated acceptance checks.
+
+## Tests
+
+Run the transformation rule tests with:
+
+```bash
+python -m unittest discover -s tests -v
 
 ## AI Usage
 

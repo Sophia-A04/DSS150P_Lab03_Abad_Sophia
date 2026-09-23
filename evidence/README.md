@@ -25,10 +25,14 @@ This folder contains visual evidence collected during DSS150P Laboratory Activit
 7. `07_airflow_full_success.png`
    - Successful Airflow full-mode DAG execution.
 
-8. `08_airflow_failure_retry.png`
+8. `08_airflow_failure_retry.jpg`
    - Controlled Airflow failure, retry behavior, and failure callback evidence.
 
-9. `09_airflow_partition_success.png`
+9. `09_airflow_partition_success.jpg`
    - Successful parameterized Airflow partition execution for January 2025.
 
 Additional written evidence is available under the repository `docs/` directory.
+
+- `docs/technical_questions.md`
+- `docs/benchmark_results.csv`
+- `evidence/README.md`
