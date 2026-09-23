@@ -97,7 +97,11 @@ with DAG(
         bash_command=(
             f'cd {PROJECT} && '
             f'PIPELINE_RUN_ID="{PIPELINE_RUN_ID}" '
-            f"python -m src.cli load"
+            '{% if params.run_mode == "partition" %} '
+            'python -m src.cli load-partition --year {{ params.year }} --month {{ params.month }} '
+            '{% else %} '
+            'python -m src.cli load '
+            '{% endif %}'
         ),
     )
 
@@ -106,8 +110,6 @@ with DAG(
         bash_command=(
             f'cd {PROJECT} && '
             f'PIPELINE_RUN_ID="{PIPELINE_RUN_ID}" '
-            f"python -m src.cli validate"
+            "python -m src.cli validate"
         ),
     )
-
-    extract >> transform >> load >> validate
