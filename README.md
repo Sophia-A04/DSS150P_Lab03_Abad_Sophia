@@ -167,6 +167,9 @@ Run the transformation rule tests with:
 
 ```bash
 python -m unittest discover -s tests -v
+```
+
+The test suite contains five meaningful tests covering deduplication, quarantine metadata, reason accumulation, and deterministic record hashing.
 
 ## AI Usage
 
