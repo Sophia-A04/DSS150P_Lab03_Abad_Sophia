@@ -7,9 +7,12 @@ from src.common.audit import new_run_id
 from src.extract.files import extract_sources
 from src.transform.staging import build_staging
 from src.transform.curated import build_curated
-from src.load.postgres import upsert_curated
+from src.load.postgres import (
+    upsert_curated,
+    load_partition,
+)
 from src.validate.quality import validate_curated
-
+from src.benchmark.storage import run_benchmark
 
 def _latest_run_dir(base_dir):
     """Return the most recently modified run_id directory."""
@@ -287,14 +290,82 @@ def main():
 
         return
 
-    # Goal 3 commands remain intentionally unwired.
-    if args.command in {
-        "benchmark",
-        "load-partition",
-    }:
-        raise NotImplementedError(
-            f"{args.command} belongs to Goal 3"
+    # ---------------------------------------------------------
+    # GOAL 3 - LOAD SELECTED PARTITION
+    # ---------------------------------------------------------
+    if args.command == "load-partition":
+        partition_root = (
+            path_for("partition_dir")
+            / "sales_order_lines"
         )
+
+        selected = pd.read_parquet(
+            partition_root,
+            filters=[
+                ("order_year", "==", args.year),
+                ("order_month", "==", args.month),
+            ],
+        )
+
+        run_id = new_run_id()
+
+        loaded_rows = load_partition(
+            selected,
+            args.year,
+            args.month,
+            run_id,
+        )
+
+        print("pipeline_run_id:", run_id)
+        print("year:", args.year)
+        print("month:", args.month)
+        print("partition rows:", loaded_rows)
+        print("RESULT: PASS")
+
+        return
+
+    # ---------------------------------------------------------
+    # GOAL 3 - STORAGE BENCHMARK
+    # ---------------------------------------------------------
+    if args.command == "benchmark":
+        run_id = _latest_run_id(
+            path_for("curated_dir")
+        )
+
+        curated_path = (
+            path_for("curated_dir")
+            / f"run_id={run_id}"
+            / "sales_order_lines.parquet"
+        )
+
+        output_dir = (
+            path_for("benchmark_dir")
+            / "task_9_2"
+        )
+
+        results, context = run_benchmark(
+            curated_path,
+            output_dir,
+            repeats=args.repeats,
+        )
+
+        print("pipeline_run_id:", run_id)
+        print("repetitions:", args.repeats)
+
+        print("\nBenchmark results:")
+        print(
+            results.to_string(
+                index=False
+            )
+        )
+
+        print("\nMachine context:")
+        for key, value in context.items():
+            print(f"{key}: {value}")
+
+        print("\nRESULT: PASS")
+
+        return
 
 
 if __name__ == "__main__":

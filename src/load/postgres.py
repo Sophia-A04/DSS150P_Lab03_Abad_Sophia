@@ -133,9 +133,93 @@ def upsert_curated(df, run_id: str) -> int:
     return affected_rows
 
 
-def load_partition(df, year: int, month: int, run_id: str) -> int:
-    """Load only a selected year/month partition and record audit.partition_loads."""
+@stage_error("PostgreSQL partition load")
+def load_partition(
+    df,
+    year: int,
+    month: int,
+    run_id: str,
+) -> int:
+    """Load one year/month partition and record its audit state."""
 
-    raise NotImplementedError(
-        "Implement Goal 3 selected-partition load"
+    if month < 1 or month > 12:
+        raise ValueError(
+            f"Invalid month: {month}"
+        )
+
+    if df.empty:
+        raise ValueError(
+            f"Selected partition {year}-{month:02d} is empty"
+        )
+
+    timestamps = pd.to_datetime(
+        df["order_timestamp"],
+        utc=True,
+        errors="coerce",
     )
+
+    if timestamps.isna().any():
+        raise ValueError(
+            "Selected partition contains invalid order_timestamp values"
+        )
+
+    expected_partition = (
+        timestamps.dt.year.eq(year)
+        & timestamps.dt.month.eq(month)
+    )
+
+    if not expected_partition.all():
+        invalid_rows = int(
+            (~expected_partition).sum()
+        )
+
+        raise ValueError(
+            f"Selected partition contains {invalid_rows} rows "
+            f"outside {year}-{month:02d}"
+        )
+
+    # Reuse the existing Goal 2 rerun-safe UPSERT logic.
+    upsert_curated(
+        df,
+        run_id,
+    )
+
+    partition_key = (
+        f"order_year={year}/order_month={month}"
+    )
+
+    row_count = len(df)
+
+    with psycopg.connect(**DB) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO audit.partition_loads (
+                    partition_key,
+                    loaded_at_utc,
+                    row_count,
+                    pipeline_run_id
+                )
+                VALUES (
+                    %s,
+                    NOW(),
+                    %s,
+                    %s
+                )
+                ON CONFLICT (partition_key)
+                DO UPDATE SET
+                    loaded_at_utc =
+                        EXCLUDED.loaded_at_utc,
+                    row_count =
+                        EXCLUDED.row_count,
+                    pipeline_run_id =
+                        EXCLUDED.pipeline_run_id
+                """,
+                (
+                    partition_key,
+                    row_count,
+                    run_id,
+                ),
+            )
+
+    return row_count    
