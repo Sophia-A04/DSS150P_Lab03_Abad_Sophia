@@ -110,9 +110,7 @@ order_year=2025/
 order_year=2026/
     order_month=1/
     ...
-
-    ```
-
+```
 This organization allows a selected year/month to be read without scanning the entire curated dataset.
 
 ## Task 9.4 - Selected Partition Loading
