@@ -1,4 +1,5 @@
 import argparse
+import os
 
 import pandas as pd
 
@@ -13,6 +14,7 @@ from src.load.postgres import (
 )
 from src.validate.quality import validate_curated
 from src.benchmark.storage import run_benchmark
+
 
 def _latest_run_dir(base_dir):
     """Return the most recently modified run_id directory."""
@@ -72,6 +74,32 @@ def _latest_run_id(base_dir):
     latest = _latest_run_dir(base_dir)
 
     return latest.name.removeprefix("run_id=")
+
+
+def _resolve_run_id(base_dir):
+    """
+    Use the Airflow-provided PIPELINE_RUN_ID when available.
+
+    Outside Airflow, fall back to the newest run-specific directory
+    so the existing local CLI workflow remains compatible.
+    """
+
+    pipeline_run_id = os.getenv("PIPELINE_RUN_ID")
+
+    if pipeline_run_id:
+        run_dir = (
+            base_dir
+            / f"run_id={pipeline_run_id}"
+        )
+
+        if not run_dir.is_dir():
+            raise FileNotFoundError(
+                f"Expected pipeline run directory not found: {run_dir}"
+            )
+
+        return pipeline_run_id
+
+    return _latest_run_id(base_dir)
 
 
 def main():
@@ -146,7 +174,7 @@ def main():
     # GOAL 2 - TRANSFORM
     # ---------------------------------------------------------
     if args.command == "transform":
-        run_id = _latest_run_id(
+        run_id = _resolve_run_id(
             path_for("raw_dir")
         )
 
@@ -189,7 +217,7 @@ def main():
     # GOAL 2 - LOAD
     # ---------------------------------------------------------
     if args.command == "load":
-        run_id = _latest_run_id(
+        run_id = _resolve_run_id(
             path_for("curated_dir")
         )
 
@@ -210,7 +238,7 @@ def main():
     # GOAL 2 - VALIDATE
     # ---------------------------------------------------------
     if args.command == "validate":
-        run_id = _latest_run_id(
+        run_id = _resolve_run_id(
             path_for("curated_dir")
         )
 
