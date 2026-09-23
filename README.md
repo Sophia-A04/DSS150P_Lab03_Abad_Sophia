@@ -156,3 +156,9 @@ Detailed laboratory evidence is available in:
 - `docs/technical_reflection.md`
 
 These documents record environment validation, ETL/ELT behavior, quarantine handling, storage benchmarking, partition loading, Airflow orchestration, controlled failure and recovery, and the final integrated acceptance checks.
+
+## AI Usage
+
+I used ChatGPT and Gemini as an AI tool during this laboratory activity. I needed help to understand some of the laboratory instructions, I asked questions about some steps and asked them to explain technical terms in simpler words, troubleshoot errors on my laptop that appeared while running commands, and organize some parts of the Python code and documentation.
+
+I ran the commands and scripts myself and used the actual outputs from my environment when recording profiling results. I read the generated code and documentation before adding them to the repository. I would ask what this and that would do, because I was unfamiliar with GitHub. I think I am familiarized with how to navigate GitHub and VS code, words like "git status" and "git add" appear a lot while I am working on the terminal.
