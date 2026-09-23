@@ -1,8 +1,9 @@
 from pathlib import Path
 import shutil
 from src.config import path_for
+from src.common.errors import stage_error
 
-
+@stage_error("raw extraction")
 def extract_sources(run_id: str) -> Path:
     """Copy immutable source snapshots into a run-specific raw directory."""
 

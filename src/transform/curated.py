@@ -4,6 +4,7 @@ import json
 import pandas as pd
 
 from src.config import path_for
+from src.common.errors import stage_error
 
 
 HASH_COLUMNS = [
@@ -101,7 +102,7 @@ def _record_hash(row: pd.Series) -> str:
 
     return sha256(encoded).hexdigest()
 
-
+@stage_error("curated transformation")
 def build_curated(staging: dict, run_id: str):
     """Join valid staging data and create analysis-ready sales rows."""
 

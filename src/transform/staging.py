@@ -2,7 +2,7 @@ import json
 import pandas as pd
 
 from src.config import path_for, SETTINGS
-
+from src.common.errors import stage_error
 
 def _add_reason(reason: pd.Series, mask: pd.Series, message: str) -> None:
     """Append a readable quarantine reason wherever mask is True."""
@@ -43,7 +43,7 @@ def _quarantine_rows(
 
     return quarantined
 
-
+@stage_error("staging transformation")
 def build_staging(raw_dir, run_id: str):
     """Create cleaned, typed staging datasets and quarantine invalid records."""
 
