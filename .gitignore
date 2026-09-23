@@ -3,3 +3,14 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Generated pipeline data
+data/raw/
+data/staging/
+data/curated/
+data/quarantine/
+data/benchmarks/
+data/partitioned/
+
+# Runtime logs
+logs/
