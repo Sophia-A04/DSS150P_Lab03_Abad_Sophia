@@ -6,13 +6,21 @@ from airflow.operators.bash import BashOperator
 PROJECT = '/opt/airflow/project'
 
 def failure_callback(context):
-    # TODO Goal 4: write a concise failure record or print meaningful context.
-    print('TASK FAILED:', context['task_instance'].task_id)
+    task_instance = context.get("task_instance")
+    exception = context.get("exception")
+
+    print("AIRFLOW TASK FAILURE")
+    print("dag_id:", task_instance.dag_id if task_instance else None)
+    print("task_id:", task_instance.task_id if task_instance else None)
+    print("run_id:", context.get("run_id"))
+    print("try_number:", task_instance.try_number if task_instance else None)
+    print("exception:", repr(exception))
 
 DEFAULT_ARGS = {
     'owner': 'dss150p',
     'retries': 2,
     'retry_delay': timedelta(minutes=1),
+    'execution_timeout': timedelta(minutes=10),
     'on_failure_callback': failure_callback,
 }
 
