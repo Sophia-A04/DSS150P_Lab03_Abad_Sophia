@@ -93,4 +93,45 @@ Business measures are calculated as:
 ```text
 gross_amount = quantity * unit_price
 discount_amount = gross_amount * discount_pct
-net_amount = gross_amount - discount_amount 
+net_amount = gross_amount - discount_amount
+```
+
+The curated dataset retains lineage through `pipeline_run_id` and contains the valid business rows after quarantine handling.
+
+## Validation Results
+
+Curated validation completed successfully.
+
+Observed results:
+
+- Curated rows: 49,897
+- Validation errors: 0
+- Result: PASS
+
+## PostgreSQL Loading and Rerun Safety
+
+The curated dataset was persisted to:
+
+`curated.sales_order_lines`
+
+A repeated full pipeline execution reported:
+
+- Database rows affected: 0
+- Total PostgreSQL rows: 49,897
+- Distinct `order_id` values: 49,897
+
+Because an unchanged rerun did not insert duplicate business rows, the PostgreSQL loading process demonstrated rerun-safe behavior.
+
+## Goal 2 Acceptance
+
+Goal 2 demonstrated:
+
+- immutable raw extraction
+- staging cleanup and deduplication
+- explicit technical quarantine
+- orphan quarantine during curated processing
+- cross-source curated transformation
+- data-quality validation
+- PostgreSQL persistence
+- rerun-safe repeated execution
+- no duplicate `order_id` values after rerunning the pipeline

@@ -110,3 +110,51 @@ order_year=2025/
 order_year=2026/
     order_month=1/
     ...
+
+    ```
+
+This organization allows a selected year/month to be read without scanning the entire curated dataset.
+
+## Task 9.4 - Selected Partition Loading
+
+The January 2025 partition was loaded using:
+
+```bash
+python -m src.cli load-partition --year 2025 --month 1
+```
+
+Observed results:
+
+- Year: 2025
+- Month: 1
+- Partition rows: 2,458
+- Result: PASS
+
+The load was recorded in `audit.partition_loads` using the partition key:
+
+`order_year=2025/order_month=1`
+
+The audit record reported:
+
+- Row count: 2,458
+
+After the selected-partition load, the curated PostgreSQL table remained at:
+
+- Total rows: 49,897
+- Distinct `order_id` values: 49,897
+
+This demonstrated that selected-partition loading was rerun-safe and did not create duplicate business rows.
+
+## Goal 3 Acceptance
+
+Goal 3 demonstrated:
+
+- equivalent CSV, JSONL, Parquet, and PostgreSQL representations
+- controlled repeated benchmarking
+- machine-context reporting
+- compressed Parquet storage
+- year/month partitioning
+- filtered partition reads
+- selected-partition PostgreSQL loading
+- partition audit tracking
+- rerun-safe loading without duplicate business rows

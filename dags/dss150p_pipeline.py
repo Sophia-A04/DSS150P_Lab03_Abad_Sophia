@@ -113,3 +113,5 @@ with DAG(
             "python -m src.cli validate"
         ),
     )
+
+    extract >> transform >> load >> validate
